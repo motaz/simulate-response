@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 
 	"io/ioutil"
 	"net/http"
@@ -18,10 +19,15 @@ func writeLog(event string) {
 func handleRequests(w http.ResponseWriter, r *http.Request) {
 
 	path := r.RequestURI
-	file := strings.ReplaceAll(path, "/", "")
+	file := strings.TrimPrefix(path, "/")
 	var ext string
 	contentType := r.Header.Get("content-type")
-	writeLog("request from: " + codeutils.GetRemoteIP(r) + " : " + contentType)
+	writeLog("request from: " + codeutils.GetRemoteIP(r) + " : " + contentType + ", method: " + r.Method)
+
+	body, err := io.ReadAll(r.Body)
+	if err == nil {
+		writeLog(string(body))
+	}
 	writeLog(path)
 	if file == "" {
 		fmt.Fprintf(w, "Please call /path")
